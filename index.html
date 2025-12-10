@@ -270,28 +270,12 @@
       };
 
       document.body.appendChild(script);
-      let lastHeight = window.innerHeight;
-
-      function fixUnityViewportAfterKeyboard() {
-          const newHeight = window.innerHeight;
-
-          // Срабатывает только когда клавиатура открылась или закрылась
-          if (Math.abs(newHeight - lastHeight) > 100) {
-              if (typeof Module !== 'undefined' && Module.canvas) {
-                  Module.canvas.width = window.innerWidth;
-                  Module.canvas.height = window.innerHeight;
-
-                  if (Module.resizeCanvas) {
-                      Module.resizeCanvas();
-                  }
-              }
+      function forceUnityResize() {
+          if (typeof unityInstance !== 'undefined') {
+              unityInstance.SendMessage("WebGLResizer", "ForceResize");
           }
-
-          lastHeight = newHeight;
       }
-
-      window.addEventListener("resize", fixUnityViewportAfterKeyboard);
-      window.addEventListener("orientationchange", fixUnityViewportAfterKeyboard);
+      window.addEventListener("resize", forceUnityResize);
     </script>
   </body>
 </html>
