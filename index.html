@@ -16,6 +16,26 @@
         background-color: initial;
       }
 
+      #ui-bottom-wrapper {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: calc(env(safe-area-inset-bottom) + 24px);
+
+          /* ИЗМЕНЕНИЕ: Flexbox управляет потоком */
+          display: flex;
+          flex-direction: column; /* Лоадер сверху, Факт снизу */
+          justify-content: flex-end; /* Прижимаем все к низу */
+          align-items: center; /* Центрируем по горизонтали */
+
+          padding: 0 32px;
+          gap: 20px; /* Отступ между лоадером и фактом */
+          z-index: 50;
+          
+          /* Чтобы контейнер не блокировал клики по бокам */
+          pointer-events: none; 
+      }
+
       #unity-container {
         position: relative;
         background: url('TemplateData/image_66a78f.jpg') no-repeat center center;
@@ -27,15 +47,19 @@
         background: transparent !important;
       }
 
-      /* --- ГОЛУБОЙ ПРОГРЕСС-БАР --- */
+      /* --- ЛОАДЕР --- */
       #unity-loading-bar {
-          position: absolute;
-          left: 50%;
-          transform: translateX(-50%);
+          position: relative; 
           width: 80%;
           max-width: 500px;
           height: 22px;
+          
+          /* ВАЖНО: Сбрасываем старое позиционирование, чтобы он не улетал вправо */
+          left: auto;
+          transform: none; 
+          margin: 0; /* Flexbox сам его отцентрует */
 
+          pointer-events: auto; 
           display: none;
 
           background: rgba(255,255,255,0.15);
@@ -97,13 +121,16 @@
       }
 
       #fun-fact-box {
-        position: absolute;
-        left: 50%;
-        bottom: 5%;
-        transform: translateX(-50%);
+        position: relative;
         width: 80%;
         max-width: 520px;
+        
+        /* ВАЖНО: Тоже сбрасываем, чтобы факт стоял ровно */
+        left: auto;
+        bottom: auto;
+        transform: none;
 
+        pointer-events: auto;
         padding: 24px 26px;
 
         background: rgba(0, 0, 0, 0.55);
@@ -141,15 +168,17 @@
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
 
-      <div id="unity-loading-bar">
-        <div id="unity-progress-bar">
-          <div id="progress-fill"></div>
-        </div>
-      </div>
+      <div id="ui-bottom-wrapper">
+          <div id="unity-loading-bar">
+              <div id="unity-progress-bar">
+                  <div id="progress-fill"></div>
+              </div>
+          </div>
 
-      <div id="fun-fact-box">
-        <div class="headline">Интересный факт</div>
-        <div class="fact-text"></div>
+          <div id="fun-fact-box">
+              <div class="headline">Интересный факт</div>
+              <div class="fact-text"></div>
+          </div>
       </div>
 
       <div id="unity-warning"></div>
@@ -215,7 +244,7 @@
         "Чинара славится своей огромной раскидистой кроной, которая может создавать тень на площади до 400-500 квадратных метров.",
         "Саксаул - главное дерево пустынь Узбекистана. Его корни уходят на десятки метров вглубь в поисках воды, укрепляя пески.",
         "Ива белая, растущая вдоль арыков и рек, за сутки может выкачать из почвы и испарить через листья до 250 литров воды.",
-        "Дикая фисташка - одно из древнейших растений Средней Азии. Это дерево-долгожитель, приспособившееся к каменистым склонам.",
+        "Дикая фисташка - одно из древнейших растений Центральной Азии. Это дерево-долгожитель, приспособившееся к каменистым склонам.",
         "Знаменитый шелковый путь проходил через оазисы, созданные руками человека с помощью посадок тополей и ив.",
         "В Узбекистане из сока местного вида клена (клён туркестанский) также можно добывать сладкий сироп, хотя это не так распространено, как в Канаде.",
         "В горах Узбекистана существуют уникальные естественные рощи грецкого ореха, например, в Чаткальских горах.",
@@ -229,27 +258,6 @@
       }
 
       setRandomFact();
-
-      /* 🔥🔥 ПРАВИЛЬНОЕ РАСПОЛОЖЕНИЕ ПРОГРЕСС-БАРА 🔥🔥 */
-      function updateProgressBarPosition() {
-          const fact = document.getElementById("fun-fact-box");
-          const bar = document.getElementById("unity-loading-bar");
-
-          const rect = fact.getBoundingClientRect();
-
-          // расстояние от низа экрана до верха факта
-          const distanceFromBottom = window.innerHeight - rect.top;
-
-          // ставим прогресс-бар строго над фактом
-          bar.style.bottom = (distanceFromBottom + 20) + "px";
-          bar.style.top = "auto"; // важно!
-      }
-
-      setTimeout(updateProgressBarPosition, 0);
-      setTimeout(updateProgressBarPosition, 100);
-      setTimeout(updateProgressBarPosition, 300);
-      setTimeout(updateProgressBarPosition, 600);
-      window.addEventListener("resize", updateProgressBarPosition);
 
       var script = document.createElement("script");
       script.src = loaderUrl;
