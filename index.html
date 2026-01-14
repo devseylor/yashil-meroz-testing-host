@@ -159,37 +159,113 @@
         line-height: 1.45;
         opacity: 0.92;
       }
+        /* --- CONNECTION ERROR OVERLAY --- */
+        #connection-error-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: none;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            align-items: center;
+            justify-content: center;
+        }
+
+            #connection-error-overlay.active {
+                display: flex;
+            }
+
+        .error-panel {
+            width: 85%;
+            max-width: 420px;
+            padding: 28px 26px;
+            border-radius: 22px;
+            background: rgba(20, 20, 20, 0.9);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        .error-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .error-text {
+            font-size: 15px;
+            line-height: 1.45;
+            opacity: 0.9;
+            margin-bottom: 22px;
+        }
+
+        .reload-btn {
+            width: 100%;
+            padding: 14px 0;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(90deg, #4db8ff, #0077ff);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
     </style>
   </head>
 
   <body>
-    <div id="custom-header-logo"></div>
+      <div id="custom-header-logo"></div>
 
-    <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+      <div id="unity-container" class="unity-desktop">
+          <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
 
-      <div id="ui-bottom-wrapper">
-          <div id="unity-loading-bar">
-              <div id="unity-progress-bar">
-                  <div id="progress-fill"></div>
+          <div id="ui-bottom-wrapper">
+              <div id="unity-loading-bar">
+                  <div id="unity-progress-bar">
+                      <div id="progress-fill"></div>
+                  </div>
+              </div>
+
+              <div id="fun-fact-box">
+                  <div class="headline">Интересный факт</div>
+                  <div class="fact-text"></div>
               </div>
           </div>
 
-          <div id="fun-fact-box">
-              <div class="headline">Интересный факт</div>
-              <div class="fact-text"></div>
+          <div id="unity-warning"></div>
+          <div id="unity-footer">
+              <div id="unity-logo-title-footer"></div>
+              <div id="unity-fullscreen-button"></div>
+              <div id="unity-build-title">yashil_meros</div>
           </div>
       </div>
 
-      <div id="unity-warning"></div>
-      <div id="unity-footer">
-        <div id="unity-logo-title-footer"></div>
-        <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">yashil_meros</div>
+      <div id="connection-error-overlay">
+          <div class="error-panel">
+              <div class="error-title">Проблема с соединением</div>
+              <div class="error-text">
+                  Не удалось загрузить игру. Проверьте интернет и попробуйте снова.
+              </div>
+              <button class="reload-btn" onclick="location.reload()">Перезагрузить</button>
+          </div>
       </div>
-    </div>
 
-    <script>
+      <script>
+
+          let unityLoaded = false;
+          let unityFailed = false;
+          let visibilityHiddenAt = 0;
+
+        function showConnectionError() {
+              console.warn("Connection / WASM error");
+              document
+                  .getElementById("connection-error-overlay")
+                  .classList.add("active");
+          }
+
+
       var canvas = document.querySelector("#unity-canvas");
 
       function unityShowBanner(msg, type) {
@@ -212,16 +288,16 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/farm1.loader.js";
+      var loaderUrl = buildUrl + "/newbuild.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/farm1.data.unityweb",
-        frameworkUrl: buildUrl + "/farm1.framework.js.unityweb",
-        codeUrl: buildUrl + "/farm1.wasm.unityweb",
+        dataUrl: buildUrl + "/newbuild.data.unityweb",
+        frameworkUrl: buildUrl + "/newbuild.framework.js.unityweb",
+        codeUrl: buildUrl + "/newbuild.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "yashil_meros",
-        productVersion: "0.1.3",
+        productVersion: "1.0.1",
         showBanner: unityShowBanner,
       };
 
@@ -239,25 +315,77 @@
 
       document.querySelector("#unity-loading-bar").style.display = "block";
 
-      const facts = [
-        "В Узбекистане растут чинары (платаны восточные), возраст которых превышает 1000 лет. Они являются живыми свидетелями истории.",
-        "Чинара славится своей огромной раскидистой кроной, которая может создавать тень на площади до 400-500 квадратных метров.",
-        "Саксаул - главное дерево пустынь Узбекистана. Его корни уходят на десятки метров вглубь в поисках воды, укрепляя пески.",
-        "Ива белая, растущая вдоль арыков и рек, за сутки может выкачать из почвы и испарить через листья до 250 литров воды.",
-        "Дикая фисташка - одно из древнейших растений Центральной Азии. Это дерево-долгожитель, приспособившееся к каменистым склонам.",
-        "Знаменитый шелковый путь проходил через оазисы, созданные руками человека с помощью посадок тополей и ив.",
-        "В Узбекистане из сока местного вида клена (клён туркестанский) также можно добывать сладкий сироп, хотя это не так распространено, как в Канаде.",
-        "В горах Узбекистана существуют уникальные естественные рощи грецкого ореха, например, в Чаткальских горах.",
-        "В Узбекистане встречаются деревья, которые являются эндемиками (больше нигде в мире не растут) и реликтами, как некоторые виды яблонь и боярышника.",
-        "Для борьбы с высыханием Аральского моря и опустыниванием в Узбекистане высаживаются миллионы саженцев drought-resistant (засухоустойчивых) деревьев, создавая новые леса."
-      ];
+      const translations = {
+          "ru": {
+              "headline": "Интересный факт",
+              "facts": [
+                  "В Узбекистане растут чинары (платаны восточные), возраст которых превышает 1000 лет. Они являются живыми свидетелями истории.",
+                  "Чинара славится своей огромной раскидистой кроной, которая может создавать тень на площади до 400-500 квадратных метров.",
+                  "Саксаул - главное дерево пустынь Узбекистана. Его корни уходят на десятки метров вглубь в поисках воды, укрепляя пески.",
+                  "Ива белая, растущая вдоль арыков и рек, за сутки может выкачать из почвы и испарить через листья до 250 литров воды.",
+                  "Дикая фисташка - одно из древнейших растений Средней Азии. Это дерево-долгожитель, приспособившееся к каменистым склонам.",
+                  "Знаменитый шелковый путь проходил через оазисы, созданные руками человека с помощью посадок тополей и ив.",
+                  "В Узбекистане из сока местного вида клена (клён туркестанский) также можно добывать сладкий сироп, хотя это не так распространено, как в Канаде.",
+                  "В горах Узбекистана существуют уникальные естественные рощи грецкого ореха, например, в Чаткальских горах.",
+                  "В Узбекистане встречаются деревья, которые являются эндемиками (больше нигде в мире не растут) и реликтами, как некоторые виды яблонь и боярышника.",
+                  "Для борьбы с высыханием Аральского моря и опустыниванием в Узбекистане высаживаются миллионы саженцев засухоустойчивых деревьев, создавая новые леса."
+              ]
+          },
+          "en": {
+              "headline": "Interesting fact",
+              "facts": [
+                  "In Uzbekistan, there are sycamore trees (oriental plane trees) that are over 1,000 years old. They are living witnesses to history.",
+                  "The Chinar tree is famous for its huge spreading crown, which can create shade over an area of up to 400-500 square meters.",
+                  "Saxaul is the main tree of the deserts of Uzbekistan. Its roots go tens of meters deep in search of water, stabilizing the sand.",
+                  "White willow, growing along irrigation ditches and rivers, can “pump” up to 250 liters of water from the ground and evaporate it through its leaves in a single day.",
+                  "The wild Pistachio is one of the oldest plants in Middle Asia. It is a long-lived tree that has adapted to rocky slopes.",
+                  "The famous Silk Road passed through oases created by human hands with the help of poplar and willow plantings.",
+                  "In Uzbekistan, sweet syrup can also be extracted from the sap of a local species of maple (Turkestan maple), although this is not as common as in Canada.",
+                  "There are unique natural walnut groves in the mountains of Uzbekistan, for example, in the Chatkal Mountains.",
+                  "In Uzbekistan, there are trees that are endemic (they do not grow anywhere else in the world) and relics, such as some species of apple trees and hawthorn.",
+                  "To combat the drying up of the Aral Sea and desertification in Uzbekistan, millions of drought-resistant tree seedlings are being planted, creating new forests."
+              ]
+          },
+          "uz": {
+              "headline": "Qiziqarli ma'lumot:",
+              "facts": [
+                  "O‘zbekistonda yoshi 1000 yildan oshgan chinorlar (sharq chinorlari) o‘sadi. Ular tarixning jonli guvohlaridir.",
+                  "Chinor o‘zining ulkan yoyiq shox-shabbasi bilan mashhur bo‘lib, u 400-500 kvadrat metrgacha bo‘lgan maydonda soya hosil qilishi mumkin.",
+                  "Saksovul - O‘zbekiston cho‘llarining asosiy daraxti. Uning ildizlari suv izlab o‘nlab metr chuqurlikka kirib boradi va qumlarni mustahkamlaydi.",
+                  "Ariq va daryo bo‘ylarida o‘sadigan oq tol bir kecha-kunduzda tuproqdan 250 litrgacha suv 'ichib' va uni barglari orqali bug‘latishi mumkin.",
+                  "Yovvoyi pista Markaziy Osiyodagi eng qadimgi o‘simliklardan biri. U toshli tog' yonbag'irlarida o'sishga moslashgan uzoq umr ko‘ruvchi daraxt.",
+                  "Mashhur Buyuk Ipak yo‘li terak va tol daraxtlarini ekish orqali inson qo‘li bilan yaratilgan vohalar orqali o‘tgan.",
+                  "Garchi bu Kanadadagi kabi keng tarqalmagan bo‘lsa-da, O‘zbekistonda zarangning mahalliy turi sharbatidan (Turkiston zarangi) shirin sirop olish mumkin.",
+                  "O‘zbekiston tog‘larida, masalan, Chotqol tog‘larida noyob tabiiy yong‘oqzorlar mavجد.",
+                  "O‘zbekistonda olma va do‘lananing ayrim turlari kabi endemik (dunyoning boshqa hech qayerida o‘smaydi) va relikt daraxtlar uchraydi.",
+                  "Orol dengizining qurishi va cho‘llanishga qarши kurashish maqsadida O‘zbekistonda millionlab qurg‘oqchilikka chidamli daraxt ko‘chatlari ekilib, yangi o‘rmonzorlar barpo etilmoqda."
+              ]
+          }
+      };
+
+      function setLocalizedContent() {
+          let lang = getCookie("click-language");
+
+          if (!lang || !translations[lang]) {
+              lang = "ru";
+          }
+
+          const currentData = translations[lang];
+          const factBox = document.querySelector("#fun-fact-box .fact-text");
+          const headlineBox = document.querySelector("#fun-fact-box .headline");
+
+          headlineBox.textContent = currentData.headline;
+
+          const randomFact = currentData.facts[Math.floor(Math.random() * currentData.facts.length)];
+          factBox.textContent = randomFact;
+      }
 
       function setRandomFact() {
           const factBox = document.querySelector("#fun-fact-box .fact-text");
           factBox.textContent = facts[Math.floor(Math.random() * facts.length)];
       }
 
-      setRandomFact();
+      setLocalizedContent();
 
       var script = document.createElement("script");
       script.src = loaderUrl;
@@ -268,12 +396,15 @@
           document.querySelector("#unity-loading-bar").style.display = "none";
           document.querySelector("#custom-header-logo").style.display = "none";
           document.querySelector("#fun-fact-box").style.display = "none";
+          unityLoaded = true;
 
           document.querySelector("#unity-fullscreen-button").onclick = () => {
             unityInstance.SetFullscreen(1);
           };
         }).catch((message) => {
-          unityShowBanner(message, 'error');
+            console.error("Unity load failed:", message);
+            unityFailed = true;
+            showConnectionError();
         });
       };
 
@@ -284,6 +415,43 @@
           }
       }
       window.addEventListener("resize", forceUnityResize);
-    </script>
+
+      function getCookie(name) {
+          let matches = document.cookie.match(new RegExp(
+              "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+          ));
+          return matches ? decodeURIComponent(matches[1]) : undefined;
+          }
+
+          // Ловим wasm / network ошибки
+          window.addEventListener("error", function (e) {
+              if (e.message && e.message.toLowerCase().includes("wasm")) {
+                  alert(e);
+                  unityFailed = true;
+                  showConnectionError();
+              }
+          });
+
+          //// iOS: возврат после блокировки экрана
+          //document.addEventListener("visibilitychange", () => {
+          //    if (document.hidden) {
+          //        visibilityHiddenAt = Date.now();
+          //        return;
+          //    }
+
+          //    // вернулись из background
+          //    const hiddenTime = Date.now() - visibilityHiddenAt;
+
+          //    // если Unity уже загружен — НЕ ТРОГАЕМ
+          //    if (unityLoaded && !unityFailed) return;
+
+          //    // если Unity НЕ загрузился и экран был заблокирован долго
+          //    if (!unityLoaded && hiddenTime > 1500) {
+          //        unityFailed = true;
+          //        showConnectionError();
+          //    }
+          //});
+
+      </script>
   </body>
 </html>
